@@ -1,115 +1,118 @@
-function addElement(){
-    let inputElement = document.getElementById('userInput');
-    let userInput = inputElement.value;
-    if(userInput != ''){
-        let listItem = document.createElement('li');
 
-//add remove button
+const canvas =document.getElementById('canvas');
+const context = canvas.getContext('2d');
+//images
+const birdImage = new Image();
+birdImage.src = 'images/bird.png';
 
-        let remButton = document.createElement('button');
-        remButton.innerHTML = 'remove';
-        remButton.style.float = 'right';
+const backgroundImage = new Image();
+backgroundImage.src = 'images/background.png';
 
-//style the remove button with class
+const foregroundImage = new Image();
+foregroundImage.src = 'images/foreground.png';
 
-        remButton.setAttribute('class','remButton');
-//add functionality to button and style
+const pipeDown = new Image();
+pipeDown.src = 'images/pipeDown.png';
 
-        remButton.addEventListener('click',function(){
-            let removeWrapper = document.getElementById('removedElements');
-            removeWrapper.append(listItem);
-            listItem.style.color='white';
-            listItem.style.margin='20px';
-            
-//hide buttons when clicked
+const pipeUp = new Image();
+pipeUp.src = 'images/pipeUp.png';
+//sounds
+const fly = new Audio();
+fly.src = 'sounds/fly.mp3';
 
-            remButton.style.display='none';
-            doneButton.style.display='none';
+const score = new Audio();
+score.src = 'sounds/score.mp3';
 
-//add an option to return (create and add class) 
+//build bird
+const bird = {
+    x : 10,
+    y : 150
+};
+//functionality to bird
+document.addEventListener('keydown', moveUp);
 
-            let returnUp = document.createElement('button');
-            returnUp.innerHTML = 'return';
-            returnUp.style.float = 'right';
-            listItem.append(returnUp);
-            returnUp.setAttribute('class','returnButton');
+function moveUp() {
+    bird.y -= 25;
+    //fly.play(); 
+  }
+            //background and foreground
+const pipes = [];
 
-//add functionality to returnButton and style
+pipes[0] = {
+    x: canvas.width,
+    y: 0
+  };
 
-            returnUp.addEventListener('click',function(){
-                let mainWrapper = document.getElementById('unorderedList');
-                mainWrapper.append(listItem);
-                remButton.style.display='inline';
-                doneButton.style.display='inline';
-                listItem.style.color = 'black';
-                returnUp.remove();
-            })
-        })
+//function DRAW
+let currentScore = 0;
+function draw(){
+  context.drawImage(backgroundImage, 0, 0);
 
-//add done Button and style it 
+    context.fillStyle = '#000';
+    context.font = '20px Verdana';
+  
+    for (let index = 0; index < pipes.length; index++) {
+        const pipe = pipes[index];
+        const gap = 85;
+    
+        // Draw two images
+        context.drawImage(pipeUp, pipe.x, pipe.y);
+        context.drawImage(pipeDown, pipe.x,pipe.y + pipeUp.height + gap);
+    
+        // Move left
+        pipe.x--;
+    
+        if (pipe.x == 125) {
+          const newPipe = {
+            x: canvas.width,
+            y: Math.random() * pipeUp.height - pipeUp.height
+          };
+    
+          newPipe.y = Math.floor(newPipe.y);
+          pipes.push(newPipe);
+        }
 
-        let doneButton = document.createElement('button');
-        doneButton.innerHTML = 'done';
-        doneButton.style.float = 'right';
-        doneButton.setAttribute('class','doneButton');
-//add functionality to button
+        //for replaying the game when lost and counting score
+        const collision = bird.x + birdImage.width >= pipe.x &&
+  bird.x <= pipe.x + pipeUp.width &&
+  (bird.y <= pipe.y + pipeUp.height ||
+  bird.y + birdImage.height >= pipe.y + pipeUp.height + gap) ||
+  bird.y + birdImage.height >= canvas.height - foregroundImage.height;
 
-        doneButton.addEventListener('click',function(){
-            let doneWrapper = document.getElementById('doneTasks');
-            listItem.style.textDecoration = 'line-through';
-            doneWrapper.append(listItem);
-            listItem.style.color='white';
-            listItem.style.margin='20px';
-//hide buttons when clicked
-
-            remButton.style.display='none';
-            doneButton.style.display='none';
-//add an option to return
-
-            let returnUp = document.createElement('button');
-            returnUp.innerHTML = 'return';
-            returnUp.style.float = 'right';
-            listItem.append(returnUp);
-            returnUp.setAttribute('class','returnButton');
-//add functionality to returnButton
-
-            returnUp.addEventListener('click',function(){
-                let mainWrapper = document.getElementById('unorderedList');
-                mainWrapper.append(listItem);
-                remButton.style.display='inline';
-                doneButton.style.display='inline';
-                listItem.style.color = 'black';
-                returnUp.remove();
-                listItem.style.textDecoration = 'none';
-            })
-        })
-//manually insert input text in the listItem property
-
-        listItem.textContent = userInput;
-//append the remove button
-
-        listItem.append(remButton);       
-//append the done Button
-
-        listItem.append(doneButton);
-//append the whole list
-
-        let list = document.getElementById('unorderedList');
-        list.append(listItem);
-//input value restart (deletes the input value after clicked)
-
-        inputElement.value = '';
-    }
+if (collision) {
+  location.reload();
 }
-/*removes all list items in the list 
-(without the ones in removed and done)*/
+if (pipe.x == 5) {
+  currentScore++;
+  score.play();
+}
 
-function clearElements(){
-    let list = document.getElementById('unorderedList');
-    let listItemsCount = list.childElementCount;
-    for (let index = listItemsCount - 1; index >= 0; index--) {
-        let listItem = list.children[index];
-        list.removeChild(listItem);
-    }
- }
+      }
+
+      
+      context.drawImage(foregroundImage,0,
+        canvas.height - foregroundImage.height);
+    
+        
+      context.drawImage(birdImage,
+        bird.x,
+        bird.y);
+    
+        const gravity = 1.5;
+        bird.y += gravity;
+        
+
+        const scoreText = 'Score: ' + currentScore;
+  context.fillText(scoreText, 10, canvas.height - 20);
+
+      
+    requestAnimationFrame(draw);
+    
+}
+draw();
+//bird crash
+
+
+
+
 
